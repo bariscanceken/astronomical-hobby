@@ -18,6 +18,7 @@ import subprocess
 #OS
 base_dir = os.path.dirname(os.path.abspath(__file__))
 path_file = os.path.join(base_dir,'spacemoives.pdf')
+path_csv = os.path.join(base_dir,'Space_Corrected.csv')
 
 #API
 apikey = "aOe1emfgmlMK8SebzLaVeQcNjHX3LuOYHuoptRLC"
@@ -70,7 +71,7 @@ def nasa_ssc():
     )
     subprocess.run(command, shell=True)
 
-    #Selenium
+#Selenium
 def letterboxd():
     options = webdriver.ChromeOptions()
     options.add_argument('--headless')
@@ -96,7 +97,7 @@ def letterboxd():
 
     time.sleep(2)
 
-    #pdf save
+#pdf save
     pdf = driver.execute_cdp_cmd("Page.printToPDF", {
         "printBackground": True,
         "landscape": False,
@@ -110,7 +111,39 @@ def letterboxd():
 
     with open(path_file, "wb") as f:
         f.write(base64.b64decode(pdf['data']))
-
     driver.quit()
 
-nasa_asteroid()
+
+#Pandas
+missionsreal = pd.read_csv(path_csv)
+missions = missionsreal.copy()
+
+class space_csv:
+    def __init__(self,missions):
+        self.missions = missions
+
+    def analysis1(self): # pandas
+        print(missions.isna()) #eksik veriler
+        missions.dropna() # eksik verileri silme
+        print(missions)
+        print(missions[missions['Status Mission'] != 'Success']) # başarılı olmayan görevler
+        print(missions.duplicated()) # tekrar eden satırlar
+        missions.drop_duplicates() # tekrar eden satırları sil
+        companies = missions['Company Name'].unique() # hangi şirketler var 
+        print(companies)
+        company_counts = missions['Company Name'].value_counts() # hangi şirket için kaç satır var
+        print(company_counts)
+        print(missions.sort_values(by=' Rocket',ascending=True)) # roket başarı oranı için sıralama
+        print(missions[missions['Company Name'] == 'RVSN USSR']) # sovyetlerin neden bu kadar fazla roketi olduğunu anlamaya çalışıyorum
+        print(missions[(missions['Company Name'] == 'RVSN USSR') & (missions['Status Mission'] != 'Success')]) # başarısız olduğu denemeler
+
+spacecsv = space_csv(missions)
+
+        
+letterboxd()
+
+
+
+
+
+
